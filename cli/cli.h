@@ -3,8 +3,8 @@
  * Summary: Command-line parsing (--scan, --trace, --monitor, flags)
  *
  * Responsibilities:
- *  - Parse argc/argv into a CommandLine struct
- *  - Validate raw args and provide help text
+ *  - Parse argc and argv into a CommandLine struct
+ *  - Validate args and provide help text
  *
  * Function prototypes:
  *  - int cli_parse(int argc, char *argv[], CommandLine *out)
@@ -23,8 +23,8 @@
 #define DEFAULT_TTL_MAX 30          // Max 30 hops for traceroute 
 #define DEFAULT_INTERVAL_MS 1000    // Sample every 1000ms = 1 second 
 
-//These define the valid ranges for various parameters
-// Ports: TCP/UDP ports range from 1 to 65535 (2^16 - 1)
+// These define the valid ranges for various parameters
+// Ports: TCP/UDP ports range from 1 to 65535
 // TTL: IP Time-To-Live field is 8 bits, so 1-255
 #define MIN_PORT 1
 #define MAX_PORT 65535

@@ -6,7 +6,7 @@
  *
  * Behavior:
  *  - Populates CommandLine with defaults and parsed values
- *  - Returns 0 on success and <0 on invalid/missing required args
+ *  - Returns EXIT_SUCCESS on success and EXIT_FAILURE on failure 
  */
 
 #include <stdio.h>
@@ -15,6 +15,74 @@
 #include <errno.h>
 
 #include "cli.h"
+
+/*
+ * Function: parse_range
+ * 
+ * Created to parse a string like "80-443" into two integers (from=80, to=443)
+ * This is a helper function used for both --ports and --ttl parsing
+ *
+ * Parameters:
+ *   str  - The input string (e.g., "80-443")
+ *   from - Pointer to store the first number
+ *   to   - Pointer to store the second number
+ *
+ * Returns:
+ *   EXIT_SUCCESS if successful
+ */
+static int parse_range(const char *str, int *from, int *to) {
+
+    // Find the dash character that separates the two numbers (returns a pointer that points to the dash)
+    const char *dash = strchr(str, '-');
+    
+    // Check if the user provided a dash
+    if (!dash) {
+        fprintf(stderr, "Error: Range must be in format 'from-to' (ex, 80-443)\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    char *endptr;
+    
+    // Extracting the start of the range
+    long from_long = strtol(str, &endptr, 10);
+
+    // Checking if the conversion happened or were there invalid characters before the dash
+    if (endptr == str) {
+        fprintf(stderr, "Error: Invalid number before '-' in range '%s'\n", str);
+        exit(EXIT_FAILURE);
+    }
+    
+    // Checking if the range is valid (checking if we made it to the location of the dash)
+    if (endptr != dash) {
+        fprintf(stderr, "Error: Invalid characters in range '%s'\n", str);
+        exit(EXIT_FAILURE);
+    }
+    
+    long to_long = strtol(dash + 1, &endptr, 10);
+
+    // Checking if the conversion happened or were there invalid characters after the dash
+    if (endptr == dash + 1) {
+        fprintf(stderr, "Error: Invalid number after '-' in range '%s'\n", str);
+        exit(EXIT_FAILURE);
+    }
+    
+    // Checking if we made it to the end of the string without any errors
+    if (*endptr != '\0') {
+        fprintf(stderr, "Error: Invalid characters at end of range '%s'\n", str);
+        exit(EXIT_FAILURE);
+    }
+
+    *from = (int)from_long;
+    *to = (int)to_long;
+    
+    // Making sure that 'from' is not greater than 'to'
+    if (*from > *to) {
+        fprintf(stderr, "Error: Range start (%d) cannot be greater than end (%d)\n", *from, *to);
+        exit(EXIT_FAILURE);
+    }
+    
+    return EXIT_SUCCESS;
+}
 
 
 /*
