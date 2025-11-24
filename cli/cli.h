@@ -21,7 +21,7 @@
 #define DEFAULT_PORTS_TO 1024       // Scan up to port 1024 (common ports)
 #define DEFAULT_TTL_START 1         // Start traceroute with TTL=1 
 #define DEFAULT_TTL_MAX 30          // Max 30 hops for traceroute 
-#define DEFAULT_INTERVAL_MS 1000    // Sample every 1000ms = 1 second 
+#define DEFAULT_INTERVAL_MS 100    // Sample every 100ms = 1 second 
 
 // These define the valid ranges for various parameters
 // Ports: TCP/UDP ports range from 1 to 65535
@@ -60,7 +60,7 @@
  *
  * MONITORING:
  *   interval_ms - How often to sample network stats, in milliseconds
- *                 (e.g., 1000 = sample once per second)
+ *                 (ex., 100 = sample once per second)
  *
  * MODE:
  *   mode - Which operation mode the user selected (scan, trace, or monitor)
