@@ -26,4 +26,4 @@ void fmt_scan_table(const struct ScanTable *table, bool json, bool csv);
 void fmt_traceroute(const struct TraceRoute *route, bool json, bool csv);
 void fmt_monitor_series(const struct MonitorSeries *series, bool json, bool csv);
 
-#endif
+#endif /* FMT_H */

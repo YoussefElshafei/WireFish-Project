@@ -9,7 +9,6 @@
  */
 
 #include "app.h"
-#include "../cli/cli.h"
 #include <stdio.h>
 #include <stdlib.h>
 

@@ -12,11 +12,12 @@
  */
 
 #include "app.h"
-#include "model.h"
-#include "../fmt/fmt.h"
+#include "../cli/cli.h"
 #include "../scanner/scanner.h"
 #include "../tracer/tracer.h"
 #include "../monitor/monitor.h"
+#include "../fmt/fmt.h"
+#include "../model/model.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

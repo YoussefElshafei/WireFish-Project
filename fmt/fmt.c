@@ -11,7 +11,7 @@
  * - Avoid business logic; pure presentation
  */
 
-#include "model.h"
+#include "../model/model.h"
 #include "fmt.h"
 #include <stdio.h>
 #include <stdbool.h>

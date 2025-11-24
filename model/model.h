@@ -14,6 +14,10 @@
  * Note:
  *  - Keep in sync with feature headers or include them conditionally.
  */
+
+#ifndef MODEL_H
+#define MODEL_H
+
 #include <stddef.h>
 #include <stdbool.h>
 
@@ -54,3 +58,5 @@ typedef struct MonitorSeries{
     IfaceStats *samples;
     size_t len, cap;
 } MonitorSeries;
+
+#endif /* MODEL_H */

@@ -11,8 +11,11 @@
  *  - Delegate all output formatting to fmt.c (table, CSV, JSON)
  */
 
-#include "../cli/cli.h"   // for CommandLine
+#ifndef APP_H
+#define APP_H
 
+#include "../cli/cli.h"   // for CommandLine
 
 int app_run(const CommandLine *cmd);
 
+#endif /* APP_H */

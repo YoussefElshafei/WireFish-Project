@@ -24,26 +24,22 @@
  *
  * Dependencies: timeutil.h, ringbuf.h (for smoothing), config.h
  */
+
 #ifndef MONITOR_H
 #define MONITOR_H
 
 #include <stddef.h>
 
-typedef struct {
-  char iface[64];
-  unsigned long long rx_bytes, tx_bytes;
-  double rx_rate_bps, tx_rate_bps;
-  double rx_avg_bps, tx_avg_bps;
-} IfaceStats;
+#include "../cli/cli.h"
+#include "../model/model.h"
 
-typedef struct {
-  IfaceStats *samples;
-  size_t len, cap;
-} MonitorSeries;
+// Uses IfaceStats and MonitorSeries from model.h
 
-struct Config;
+// sample_count: how many samples to collect (e.g., DEFAULT_MONITOR_SAMPLES)
+int monitor_run(const CommandLine *cfg, MonitorSeries *out, int sample_count);
 
-int  monitor_run(const struct Config *cfg, int duration_sec, MonitorSeries *out);
-void monitor_free(MonitorSeries *s);
+// free any heap-allocated memory in MonitorSeries
+void monitorseries_free(MonitorSeries *s);
 
 #endif /* MONITOR_H */
+

@@ -25,28 +25,17 @@
  * Thread-safety: Stateless; each call owns its TraceRoute buffer.
  * Dependencies: icmp.h, net.h, timeutil.h, config.h
  */
+
 #ifndef TRACER_H
 #define TRACER_H
 
-#include <stddef.h>
-#include <stdbool.h>
+#include "../cli/cli.h"
+#include "../model/model.h"
 
-typedef struct {
-  int  hop;
-  char host[256];
-  char ip[64];
-  int  rtt_ms;    /* -1 if timeout */
-  bool timeout;
-} Hop;
+// Uses Hop and TraceRoute from model.h
 
-typedef struct {
-  Hop *rows;
-  size_t len, cap;
-} TraceRoute;
-
-struct Config;
-
-int  tracer_run(const struct Config *cfg, TraceRoute *out);
+int tracer_run(const CommandLine *cfg, TraceRoute *out);
 void traceroute_free(TraceRoute *t);
 
 #endif /* TRACER_H */
+

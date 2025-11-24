@@ -34,74 +34,18 @@
  * Aryan Verma, 400575438, McMaster University
  */
 
+#ifndef SCANNER_H
+#define SCANNER_H
+
 #include <stddef.h>
 #include <stdbool.h>
-#include "../cli/cli.h"  
 
-/*
- * Enum: PortState
- * 
- * Represents the state of a TCP port after scanning
- * 
- * Values:
- *   PORT_CLOSED (0)   - Connection refused (RST received from server)
- *                       Server actively rejected the connection
- *   
- *   PORT_OPEN (1)     - Connection succeeded (SYN-ACK received)
- *                       Service is listening on this port
- *   
- *   PORT_FILTERED (2) - Connection timed out (no response)
- *                       Firewall blocking, host down, or service not responding
- *
- * Why these three states?
- *   - OPEN: Server accepted connection (interesting for security/inventory)
- *   - CLOSED: Server exists but port is closed (still useful info)
- *   - FILTERED: Can't tell if port is open (firewall/timeout)
- */
-typedef enum { 
-    PORT_CLOSED = 0,   // Connection refused
-    PORT_OPEN = 1,     // Connection succeeded
-    PORT_FILTERED = 2  // Connection timed out
-} PortState;
+#include "../cli/cli.h"
+#include "../model/model.h"
 
-/*
- * Struct: ScanResult
- * 
- * Represents the result of scanning a single port
- * 
- * Fields:
- *   port        - Port number (1-65535)
- *   state       - PortState (OPEN, CLOSED, or FILTERED)
- *   latency_ms  - Time taken to connect in milliseconds
- *                 Set to -1 if not measured or connection failed
- */
-typedef struct {
-    int port;           // Port number
-    PortState state;    // Port state (OPEN/CLOSED/FILTERED)
-    int latency_ms;     // Connection latency (-1 if failed/not measured)
-} ScanResult;
-
-/*
- * Struct: ScanTable
- * 
- * A dynamic array of ScanResults
- * Stores all the scan results for a target
- * 
- * Fields:
- *   rows - Pointer to array of ScanResult structures
- *   len  - Number of results currently stored
- *   cap  - Capacity of the array (for dynamic growth)
- *
- * Memory management:
- *   - scanner_run() allocates memory for rows
- *   - scantable_free() must be called to free memory
- */
-typedef struct {
-    ScanResult *rows;   // Dynamic array of results
-    size_t len;         // Number of results
-    size_t cap;         // Capacity (for growth)
-} ScanTable;
+// Uses PortState, ScanResult, ScanTable from model.h
 
 int scanner_run(const CommandLine *cfg, ScanTable *out);
 void scantable_free(ScanTable *t);
 
+#endif /* SCANNER_H */
