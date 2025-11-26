@@ -1,60 +1,63 @@
-name: C Build & Coverage
+name: C CI (wirefish)
 
 on:
   push:
-    branches:
-      - main
-      - integration-**
+    branches: [ main, integration-*, feature-* ]
   pull_request:
+    branches: [ main ]
 
 jobs:
   build-test-coverage:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Check out repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Install build tools (gcc, make, etc.)
-      - name: Install build dependencies
+      - name: Install build & coverage tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential
+          sudo apt-get install -y build-essential gcov
 
-      # 3. Build with coverage flags so gcov files are generated
-      - name: Build wirefish with coverage
+      - name: Build with coverage flags
         run: |
+          # Clean first (ignore error if there is no clean rule yet)
           make clean || true
-          make CFLAGS="--coverage" LDFLAGS="--coverage"
+          # Rebuild with gcov instrumentation flags
+          make CFLAGS="--coverage -O0 -g"
 
-      # 4. Run your tests (change this command to whatever your test script is)
-      #    If you don't have an automated test script yet, replace this with
-      #    a few sample invocations of ./wirefish that exercise the code.
-      - name: Run tests
+      - name: Make test scripts executable
         run: |
-          if [ -x ./tests/run-tests.sh ]; then
-            ./tests/run-tests.sh
-          else
-            echo "No tests script found (./tests/run-tests.sh)."
-            echo "Update this step to run your own tests."
-          fi
+          chmod +x tests/test_scanner.sh
+          chmod +x tests/test_monitor.sh
 
-      # 5. Run gcov on all modules to produce coverage reports
+      - name: Run scanner tests
+        run: |
+          ./tests/test_scanner.sh
+
+      - name: Run monitor tests
+        run: |
+          ./tests/test_monitor.sh
+
       - name: Generate gcov coverage reports
         run: |
-          # Run gcov for each C module directory
-          gcov app/*.c cli/*.c scanner/*.c tracer/*.c monitor/*.c fmt/*.c net/*.c timeutil/*.c
+          echo "Running gcov on project sources..."
+          # Run gcov on all non-test C sources so we get per-line usage info
+          gcov $(find app cli scanner tracer monitor fmt net timeutil model -name '*.c') || true
 
-      # 6. Upload coverage artifacts (.gcov, .gcda, .gcno) so you can inspect them in Actions UI
-      - name: Upload coverage artifacts
+      - name: Upload gcov reports as artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gcov-coverage
+          name: gcov-reports
           path: |
             *.gcov
-            **/*.gcov
-            *.gcda
-            *.gcno
-            **/*.gcda
-            **/*.gcno
+            app/*.gcov
+            cli/*.gcov
+            scanner/*.gcov
+            tracer/*.gcov
+            monitor/*.gcov
+            fmt/*.gcov
+            net/*.gcov
+            timeutil/*.gcov
+            model/*.gcov
