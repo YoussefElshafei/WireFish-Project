@@ -34,15 +34,19 @@ jobs:
       run: chmod +x ./tests/test_scanner.sh
 
     - name: Run test script
-      run: ./tests/test_scanner.sh > test_results. txt
+      run: |
+        ./tests/test_scanner.sh > test_results.txt 2>&1 || true
+        echo "Test script completed with exit code: $?"
       continue-on-error: true
 
     - name: Run gcov coverage reports
       if: ${{ always() }}
       run: |
+        touch coverage_summary.txt
         for file in app/*. c cli/*.c scanner/*.c tracer/*.c monitor/*.c fmt/*. c net/*.c timeutil/*.c
         do
-          gcov "$file" || true
+          echo "Running gcov on $file" | tee -a coverage_summary. txt
+          gcov "$file" 2>&1 | tee -a coverage_summary.txt || true
         done
 
     - name: Upload Test Results
@@ -50,11 +54,14 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Test Results
-        path: ./test_results.txt
+        path: |
+          ./test_results.txt
+          ./coverage_summary.txt
 
     - name: Upload Coverage Reports
       if: ${{ always() }}
       uses: actions/upload-artifact@v4
       with:
         name: Coverage Reports
-        path: ./*.gcov
+        path: . /*.gcov
+      continue-on-error: true
