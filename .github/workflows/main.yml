@@ -30,23 +30,23 @@ jobs:
     - name: Build wirefish-test (with coverage)
       run: make wirefish-test
 
+    - name: Create symlink for test script
+      run: ln -sf wirefish-test wirefish
+
     - name: Make test script executable
       run: chmod +x ./tests/test_scanner.sh
 
     - name: Run test script
       run: |
         ./tests/test_scanner.sh > test_results.txt 2>&1 || true
-        echo "Test script completed with exit code: $?"
-      continue-on-error: true
+        echo "Test script completed"
 
     - name: Run gcov coverage reports
       if: ${{ always() }}
       run: |
-        touch coverage_summary.txt
-        for file in app/*. c cli/*.c scanner/*.c tracer/*.c monitor/*.c fmt/*. c net/*.c timeutil/*.c
+        for file in app/*.c cli/*. c scanner/*.c tracer/*.c monitor/*.c fmt/*.c net/*. c timeutil/*.c
         do
-          echo "Running gcov on $file" | tee -a coverage_summary. txt
-          gcov "$file" 2>&1 | tee -a coverage_summary.txt || true
+          gcov "$file" || true
         done
 
     - name: Upload Test Results
@@ -54,9 +54,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Test Results
-        path: |
-          ./test_results.txt
-          ./coverage_summary.txt
+        path: ./test_results.txt
 
     - name: Upload Coverage Reports
       if: ${{ always() }}
