@@ -19,6 +19,8 @@
 #include "fmt.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <netinet/ip_icmp.h>  // ICMP_ECHOREPLY, ICMP_TIME_EXCEEDED
+#include <string.h>
 
 /**
  * Helper to convert PortState enum to string.
@@ -219,30 +221,87 @@ static void fmt_traceroute_json(const TraceRoute *route){
 }
 
 /**
+ * Helper to print host column with truncation if needed.
+ * @param host Hostname string
+ * @return void
+ */
+static void print_host_column(const char *host){
+
+    size_t len = strlen(host);
+
+    if(len <= 26){
+        // Left-align if short enough
+        printf("%-26s", host);
+        return;
+    }
+
+    char buf[27]; // exactly 26 chars + '\0'
+
+    // Copy first 11
+    memcpy(buf, host, 11);
+
+    // Insert "..."
+    buf[11] = '.';
+    buf[12] = '.';
+    buf[13] = '.';
+
+    // Copy last 12 chars
+    memcpy(buf + 14, host + (len - 12), 12);
+
+    buf[26] = '\0';
+
+    printf("%-26s", buf);
+}
+
+
+/**
  * Format TraceRoute in table format.
  * @param route Pointer to TraceRoute
  * @return void
  */
 static void fmt_traceroute_table(const TraceRoute *route){
 
-    printf("HOP  IP               HOST                       RTT(ms)  STATUS\n");
-    printf("---  ---------------- -------------------------- -------  ------\n");
+    printf("HOP  IP               HOST                       RTT(ms)  STATUS      \n");
+    printf("---  ---------------- -------------------------- -------  ------------\n");
 
+    // Iterate over each hop
     for(size_t i = 0; i < route->len; i++){
 
-        const Hop *current_hop = &route->rows[i];
+        const Hop *h = &route->rows[i];
 
-        const char *status = current_hop->timeout ? "TIMEOUT" : "OK";
+        char status[16];
 
-        if(current_hop->timeout || current_hop->rtt_ms < 0) {
-            printf("%-3d  %-16s %-26s %-7s  %s\n", current_hop->hop, current_hop->ip, current_hop->host, "-", status);
-        } 
-        
-        else{
-            printf("%-3d  %-16s %-26s %-7d  %s\n", current_hop->hop, current_hop->ip, current_hop->host, current_hop->rtt_ms, status);
+        // Determine status string
+        if(h->timeout){
+            strcpy(status, "TIMEOUT");
         }
+        else if(h->icmp_type == ICMP_ECHOREPLY){
+            strcpy(status, "DEST");
+        }
+        else if(h->icmp_type == ICMP_TIME_EXCEEDED){
+            strcpy(status, "TTL_EXCEEDED");
+        }
+        else{
+            strcpy(status, "OTHER");
+        }
+
+        char rtt_buf[8];
+
+        if(h->timeout || h->rtt_ms < 0){
+            strcpy(rtt_buf, "-");
+        }
+        else{
+
+            //snprintf is used to hold the rtt_ms in string format
+            snprintf(rtt_buf, sizeof(rtt_buf), "%d", h->rtt_ms);
+        }
+
+        printf("%-3d  %-16s ", h->hop, h->ip);
+        print_host_column(h->host);
+        printf(" %-7s  %-12s\n", rtt_buf, status);
     }
 }
+
 
 /**
  * Format TraceRoute in specified format.
