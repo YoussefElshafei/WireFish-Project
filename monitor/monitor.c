@@ -5,7 +5,7 @@
  * Reads /proc/net/dev to get RX/TX byte counters and computes rates.
  */
 #include "monitor.h"
-#include "timeutil.h"
+#include "../timeutil/timeutil.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -154,21 +154,30 @@ static int get_default_interface(char *iface_out, size_t len) {
     return -1;
 }
 
-void monitor_print_header(void) {
-    printf("%-10s %15s %15s %15s %15s %15s %15s\n",
-           "IFACE", "RX_BYTES", "TX_BYTES", "RX_BPS", "TX_BPS", "RX_AVG_BPS", "TX_AVG_BPS");
-    printf("------------------------------------------------------------------------------------------------------\n");
-}
+static void monitor_append(MonitorSeries *series, const IfaceStats *stats){
 
-void monitor_print_stats(const IfaceStats *stats) {
-    printf("%-10s %15llu %15llu %15.2f %15.2f %15.2f %15.2f\n",
-           stats->iface,
-           stats->rx_bytes,
-           stats->tx_bytes,
-           stats->rx_rate_bps,
-           stats->tx_rate_bps,
-           stats->rx_avg_bps,
-           stats->tx_avg_bps);
+    //
+    if(series == NULL){
+        return;
+    }
+
+    if(series->len == series->cap){
+
+        // Double capacity or start at 16
+        size_t newcap = series->cap ? series->cap * 2 : 16;
+
+        // Reallocate memory for rows
+        IfaceStats *newbuf = realloc(series->samples, newcap * sizeof(IfaceStats));
+
+        if(newbuf == NULL){
+            // allocation failed – stop growing, but keep old data
+            return;
+        }
+        series->samples = newbuf;
+        series->cap = newcap;
+    }
+
+    series->samples[series->len++] = *stats;
 }
 
 /*
@@ -179,8 +188,15 @@ void monitor_print_stats(const IfaceStats *stats) {
  *   duration_sec: monitoring duration in seconds (0 for infinite)
  * Returns: 0 on success, -1 on error
  */
-int monitor_run(const char *iface, int interval_ms, int duration_sec) {
+int monitor_run(const char *iface, int interval_ms, int duration_sec, MonitorSeries *out) {
+
+    if(out == NULL){
+        return -1;
+    }
+
     char iface_name[64];
+
+    memset(out, 0, sizeof(*out));
     
     /* Determine interface to monitor */
     if (iface == NULL) {
@@ -188,7 +204,6 @@ int monitor_run(const char *iface, int interval_ms, int duration_sec) {
             fprintf(stderr, "Could not auto-detect interface\n");
             return -1;
         }
-        printf("Auto-detected interface: %s\n", iface_name);
     } else {
         strncpy(iface_name, iface, sizeof(iface_name) - 1);
         iface_name[sizeof(iface_name) - 1] = '\0';
@@ -215,16 +230,6 @@ int monitor_run(const char *iface, int interval_ms, int duration_sec) {
         ringbuf_free(tx_ring);
         return -1;
     }
-    
-    printf("\nMonitoring interface: %s (interval: %d ms)\n", iface_name, interval_ms);
-    if (duration_sec > 0) {
-        printf("Duration: %d seconds\n", duration_sec);
-    } else {
-        printf("Duration: infinite (Ctrl+C to stop)\n");
-    }
-    printf("\n");
-    
-    monitor_print_header();
     
     /* Start monitoring loop */
     running = 1;
@@ -274,6 +279,7 @@ int monitor_run(const char *iface, int interval_ms, int duration_sec) {
         
         /* Build stats struct */
         IfaceStats stats;
+        memset(&stats, 0, sizeof(stats));        
         strncpy(stats.iface, iface_name, sizeof(stats.iface) - 1);
         stats.iface[sizeof(stats.iface) - 1] = '\0';
         stats.rx_bytes = curr_rx;
@@ -282,9 +288,8 @@ int monitor_run(const char *iface, int interval_ms, int duration_sec) {
         stats.tx_rate_bps = tx_rate;
         stats.rx_avg_bps = rx_avg;
         stats.tx_avg_bps = tx_avg;
-        
-        /* Print stats */
-        monitor_print_stats(&stats);
+
+        monitor_append(out, &stats);
         
         /* Update previous values */
         prev_rx = curr_rx;
@@ -292,10 +297,22 @@ int monitor_run(const char *iface, int interval_ms, int duration_sec) {
         prev_time = curr_time;
     }
     
-    printf("\nMonitoring stopped.\n");
-    
     ringbuf_free(rx_ring);
     ringbuf_free(tx_ring);
     
     return 0;
+}
+
+/**
+ * freeing heap memory owned by MonitorSeries
+ */
+void monitorseries_free(MonitorSeries *series){
+    if(series == NULL){
+        return;
+    }
+
+    free(series->samples);
+    series->samples = NULL;
+    series->len = 0;
+    series->cap = 0;
 }

@@ -33,29 +33,15 @@
 #define MONITOR_H
 
 #include <stddef.h>
-
-typedef struct {
-    char iface[64];
-    unsigned long long rx_bytes, tx_bytes;
-    double rx_rate_bps, tx_rate_bps;
-    double rx_avg_bps, tx_avg_bps;
-} IfaceStats;
-
-typedef struct {
-    IfaceStats *samples;
-    size_t len, cap;
-} MonitorSeries;
+#include "../model/model.h"
 
 /* Run bandwidth monitoring on interface */
-int monitor_run(const char *iface, int interval_ms, int duration_sec);
-
-/* Print table header */
-void monitor_print_header(void);
-
-/* Print stats for one sample */
-void monitor_print_stats(const IfaceStats *stats);
+int monitor_run(const char *iface, int interval_ms, int duration_sec, MonitorSeries *out);
 
 /* Stop monitoring (signal handler safe) */
 void monitor_stop(void);
+
+/* Free any heap memory owned by a MonitorSeries */
+void monitorseries_free(MonitorSeries *series);
 
 #endif /* MONITOR_H */

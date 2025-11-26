@@ -85,23 +85,34 @@ static int run_trace(const CommandLine *cmd){
  */
 static int run_monitor(const CommandLine *cmd){
 
-    //Initialize empty MonitorSeries
+    // If user passed --iface, use it; otherwise let monitor_run auto-detect
+    const char *iface = (cmd->iface[0] != '\0') ? cmd->iface : NULL;
+
+    int interval_ms = cmd->interval_ms;  // from CLI defaults / --interval
+    int samples = DEFAULT_MONITOR_SAMPLES;
+
+    // Approximate duration (in seconds) for N samples at given interval
+    // duration_sec ≈ samples * interval_ms / 1000
+    int duration_sec = (samples * interval_ms + 999) / 1000;  // round up
+
+    // Output model
     MonitorSeries series = {0};
 
-    int monitor_result = monitor_run(cmd, &series, DEFAULT_MONITOR_SAMPLES);
+    int monitor_result = monitor_run(iface, interval_ms, duration_sec, &series);
 
     if(monitor_result != 0){
-
-        fprintf(stderr, "Monitor failed (code %d).\n", monitor_result);
-        return monitor_result;
+        fprintf(stderr, "Error: monitor mode failed\n");
+        monitorseries_free(&series);
+        return -1;
     }
 
+    // Now display via fmt.c (table/CSV/JSON)
     fmt_monitor_series(&series, cmd->json, cmd->csv);
 
-    monitorseries_free(&series); // <- if monitor allocates rows, this is where you free
-
+    monitorseries_free(&series);
     return 0;
 }
+
 
 /**
  * Run the application based on CommandLine mode
