@@ -112,9 +112,9 @@ gcc -o wirefish \
 
 ## Authors
 Team 25 – DDOS Project
-Shan Truong
-Aryan Verma
-Youssef E
-Youssef K
+Shan Truong,
+Aryan Verma,
+Youssef E,
+Youssef K,
 McMaster University, 2025
 >>>>>>> integration-shan-plus-aryan-plus-youssefE
