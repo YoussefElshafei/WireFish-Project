@@ -10,18 +10,24 @@
  *  - void fmt_scan_table(const ScanTable *t, bool json, bool csv);
  *  - void fmt_traceroute(const TraceRoute *t, bool json, bool csv);
  *  - void fmt_monitor_series(const MonitorSeries *s, bool json, bool csv);
+ * 
+ * Author: Shan Truong - 400576105 - truons8
+ * Date: December 3, 2025
+ * Coures: 2XC3
  */
+
 #ifndef FMT_H
 #define FMT_H
 
 #include <stdbool.h>
 
+//Forward declarations
 struct ScanTable;
 struct TraceRoute;
 struct MonitorSeries;
 
-void fmt_scan_table(const struct ScanTable *t, bool json, bool csv);
-void fmt_traceroute(const struct TraceRoute *t, bool json, bool csv);
-void fmt_monitor_series(const struct MonitorSeries *s, bool json, bool csv);
+void fmt_scan_table(const struct ScanTable *table, bool json, bool csv);
+void fmt_traceroute(const struct TraceRoute *route, bool json, bool csv);
+void fmt_monitor_series(const struct MonitorSeries *series, bool json, bool csv);
 
 #endif /* FMT_H */

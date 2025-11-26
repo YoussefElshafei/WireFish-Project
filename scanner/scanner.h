@@ -1,6 +1,6 @@
 /*
  * File: scanner.h
- * Summary: Public API for TCP port scanning (and optional host liveness).
+ * Summary: Public API for TCP port scanning (and optional host liveness)
  *
  * Responsibilities:
  *  - Scan a host/IP (or CIDR range, if extended) for open/closed/filtered TCP ports
@@ -22,37 +22,30 @@
  *
  * Returns:
  *  - 0 on success
- *  - <0 on error (EINVAL bad args, ENETUNREACH, ETIMEDOUT, etc.)
+ *  - -1 on error (invalid args, network unreachable, etc.)
  *
  * Thread-safety: stateless API; safe to call from multiple threads if 'out' is distinct.
- * Dependencies: config.h, model.h, net.h, timeutil.h
+ * Dependencies: config.h, net.h
  *
  * Notes:
  *  - Uses non-blocking connect or timeouts for responsiveness.
  *  - Extend later for parallel scanning or CIDR enumeration.
+ *
+ * Aryan Verma, 400575438, McMaster University
  */
+
 #ifndef SCANNER_H
 #define SCANNER_H
 
 #include <stddef.h>
 #include <stdbool.h>
 
-typedef enum { PORT_CLOSED=0, PORT_OPEN=1, PORT_FILTERED=2 } PortState;
+#include "../cli/cli.h"
+#include "../model/model.h"
 
-typedef struct {
-  int port;
-  PortState state;
-  int latency_ms; /* -1 if not measured */
-} ScanResult;
+// Uses PortState, ScanResult, ScanTable from model.h
 
-typedef struct {
-  ScanResult *rows;
-  size_t len, cap;
-} ScanTable;
-
-struct Config; /* fwd decl */
-
-int  scanner_run(const struct Config *cfg, ScanTable *out);
+int scanner_run(const CommandLine *cfg, ScanTable *out);
 void scantable_free(ScanTable *t);
 
 #endif /* SCANNER_H */
