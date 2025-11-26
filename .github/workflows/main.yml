@@ -1,0 +1,60 @@
+name: C Build & Coverage
+
+on:
+  push:
+    branches:
+      - main
+      - integration-**
+  pull_request:
+
+jobs:
+  build-test-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Install build tools (gcc, make, etc.)
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+
+      # 3. Build with coverage flags so gcov files are generated
+      - name: Build wirefish with coverage
+        run: |
+          make clean || true
+          make CFLAGS="--coverage" LDFLAGS="--coverage"
+
+      # 4. Run your tests (change this command to whatever your test script is)
+      #    If you don't have an automated test script yet, replace this with
+      #    a few sample invocations of ./wirefish that exercise the code.
+      - name: Run tests
+        run: |
+          if [ -x ./tests/run-tests.sh ]; then
+            ./tests/run-tests.sh
+          else
+            echo "No tests script found (./tests/run-tests.sh)."
+            echo "Update this step to run your own tests."
+          fi
+
+      # 5. Run gcov on all modules to produce coverage reports
+      - name: Generate gcov coverage reports
+        run: |
+          # Run gcov for each C module directory
+          gcov app/*.c cli/*.c scanner/*.c tracer/*.c monitor/*.c fmt/*.c net/*.c timeutil/*.c
+
+      # 6. Upload coverage artifacts (.gcov, .gcda, .gcno) so you can inspect them in Actions UI
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: gcov-coverage
+          path: |
+            *.gcov
+            **/*.gcov
+            *.gcda
+            *.gcno
+            **/*.gcda
+            **/*.gcno
