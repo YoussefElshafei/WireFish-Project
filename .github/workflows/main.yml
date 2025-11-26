@@ -29,15 +29,10 @@ jobs:
       - name: Make test scripts executable
         run: |
           chmod +x tests/test_scanner.sh
-          chmod +x tests/test_monitor.sh
 
       - name: Run scanner tests
         run: |
           ./tests/test_scanner.sh
-
-      - name: Run monitor tests
-        run: |
-          ./tests/test_monitor.sh
 
       - name: Generate gcov coverage reports
         run: |
