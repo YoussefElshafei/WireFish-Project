@@ -44,16 +44,10 @@ jobs:
     - name: Run gcov coverage reports
       if: ${{ always() }}
       run: |
-        gcov wirefish-test-main.c || true
-        gcov wirefish-test-cli.c || true
-        gcov wirefish-test-app.c || true
-        gcov wirefish-test-scanner. c || true
-        gcov wirefish-test-tracer.c || true
-        gcov wirefish-test-monitor.c || true
-        gcov wirefish-test-fmt.c || true
-        gcov wirefish-test-net.c || true
-        gcov wirefish-test-icmp.c || true
-        gcov wirefish-test-timeutil.c || true
+        for file in app/*. c cli/*. c scanner/*.c tracer/*.c monitor/*.c fmt/*.c net/*. c timeutil/*.c
+        do
+          gcov "wirefish-test-$file" || true
+        done
 
     - name: Upload Test Results
       if: ${{ always() }}
