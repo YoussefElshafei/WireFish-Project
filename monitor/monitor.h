@@ -11,35 +11,51 @@
  *  - typedef struct MonitorSeries { IfaceStats *samples; size_t len, cap; }
  *
  * Public API:
- *  - int  monitor_run(const Config *cfg, int duration_sec, MonitorSeries *out);
- *  - void monitor_free(MonitorSeries *s);
+ *  - int  monitor_run(const char *iface, int interval_ms, int duration_sec);
+ *  - void monitor_print_header(void);
+ *  - void monitor_print_stats(const IfaceStats *stats);
  *
  * Inputs:
- *  - cfg->iface, cfg->interval_ms
+ *  - iface: interface name (e.g., "eth0", "wlan0", NULL for first available)
+ *  - interval_ms: sampling interval in milliseconds
+ *  - duration_sec: monitoring duration in seconds (0 for infinite)
+ *
  * Outputs:
  *  - Series of timestamped samples with computed rates
+ *  - Format: IFACE RX_BYTES TX_BYTES RX_BPS TX_BPS RX_AVG_BPS TX_AVG_BPS
  *
  * Returns:
  *  - 0 on success; <0 on error (iface not found, file read error)
  *
- * Dependencies: timeutil.h, ringbuf.h (for smoothing), config.h
+ * Dependencies: timeutil.h
  */
-
 #ifndef MONITOR_H
 #define MONITOR_H
 
 #include <stddef.h>
 
-#include "../cli/cli.h"
-#include "../model/model.h"
+typedef struct {
+    char iface[64];
+    unsigned long long rx_bytes, tx_bytes;
+    double rx_rate_bps, tx_rate_bps;
+    double rx_avg_bps, tx_avg_bps;
+} IfaceStats;
 
-// Uses IfaceStats and MonitorSeries from model.h
+typedef struct {
+    IfaceStats *samples;
+    size_t len, cap;
+} MonitorSeries;
 
-// sample_count: how many samples to collect (e.g., DEFAULT_MONITOR_SAMPLES)
-int monitor_run(const CommandLine *cfg, MonitorSeries *out, int sample_count);
+/* Run bandwidth monitoring on interface */
+int monitor_run(const char *iface, int interval_ms, int duration_sec);
 
-// free any heap-allocated memory in MonitorSeries
-void monitorseries_free(MonitorSeries *s);
+/* Print table header */
+void monitor_print_header(void);
+
+/* Print stats for one sample */
+void monitor_print_stats(const IfaceStats *stats);
+
+/* Stop monitoring (signal handler safe) */
+void monitor_stop(void);
 
 #endif /* MONITOR_H */
-
