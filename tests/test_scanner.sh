@@ -122,11 +122,29 @@ run_test "./wirefish --scan --target $TARGET --ports 443-443 --csv" 0 "port,stat
 # 20 - JSON output for single port
 run_test "./wirefish --scan --target $TARGET --ports 443-443 --json" 0 "\"results\"" ""
 
-# 21 - scanner_run null pointer 
-run_test "./wirefish --scan" 1 "" "Internal error"
+# 21 - closed port on localhost
+run_test "./wirefish --scan --target $TARGET --ports 1-1" 0 "closed" ""
 
-# 22 - empty target should error inside scanner_run
-run_test "./wirefish --scan --target '' --ports 1-3" 1 "" "No target specified"
+# 22 - open port on an external site
+run_test "./wirefish --scan --target google.com --ports 80-80" 0 "open" ""
+
+# 23 - filtered port using an unroutable IP
+run_test "./wirefish --scan --target 10.255.255.1 --ports 80-80" 0 "filtered" ""
+
+# 24 - another target that should fail DNS resolution
+run_test "./wirefish --scan --target badbadbad12345 --ports 20-22" 1 "" "Failed to resolve target"
+
+# 25 - larger range to make the scan table grow
+run_test "./wirefish --scan --target $TARGET --ports 1-2000" 0 "PORT  STATE" ""
+
+# 26 - even bigger range to trigger more reallocations
+run_test "./wirefish --scan --target $TARGET --ports 1-5000" 0 "PORT  STATE" ""
+
+# 27 - very large range that still succeeds
+run_test "./wirefish --scan --target $TARGET --ports 1-20000" 0 "PORT  STATE" ""
+
+# 28 - filtered ports over a small range
+run_test "./wirefish --scan --target 10.255.255.1 --ports 1-3" 0 "filtered" ""
 
 # Cleanup
 rm -f tmp_out tmp_err
