@@ -122,8 +122,8 @@ run_test "./wirefish --scan --target $TARGET --ports 443-443 --csv" 0 "port,stat
 # 20 - JSON output for single port
 run_test "./wirefish --scan --target $TARGET --ports 443-443 --json" 0 "\"results\"" ""
 
-# 21 - closed port on localhost
-run_test "./wirefish --scan --target $TARGET --ports 1-1" 0 "closed" ""
+# 21 - closed port on google.com (port 81 is closed)
+run_test "./wirefish --scan --target google.com --ports 81-81" 0 "closed" ""
 
 # 22 - open port on an external site
 run_test "./wirefish --scan --target google.com --ports 80-80" 0 "open" ""
