@@ -122,6 +122,12 @@ run_test "./wirefish --scan --target $TARGET --ports 443-443 --csv" 0 "port,stat
 # 20 - JSON output for single port
 run_test "./wirefish --scan --target $TARGET --ports 443-443 --json" 0 "\"results\"" ""
 
+# 21 - scanner_run null pointer 
+run_test "./wirefish --scan" 1 "" "Internal error"
+
+# 22 - empty target should error inside scanner_run
+run_test "./wirefish --scan --target '' --ports 1-3" 1 "" "No target specified"
+
 # Cleanup
 rm -f tmp_out tmp_err
 
