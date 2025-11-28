@@ -122,7 +122,6 @@ run_test "./wirefish --scan --target $TARGET --ports 443-443 --csv" 0 "port,stat
 # 20 - JSON output for single port
 run_test "./wirefish --scan --target $TARGET --ports 443-443 --json" 0 "\"results\"" ""
 
-
 # 21 - open port on an external site
 run_test "./wirefish --scan --target google.com --ports 80-80" 0 "open" ""
 
@@ -130,7 +129,7 @@ run_test "./wirefish --scan --target google.com --ports 80-80" 0 "open" ""
 run_test "./wirefish --scan --target 10.255.255.1 --ports 80-80" 0 "filtered" ""
 
 # 23 - another target that should fail DNS resolution
-run_test "./wirefish --scan --target badbadbad12345 --ports 20-22" 1 "" "Failed to resolve target"
+run_test "./wirefish --scan --target notbadbadbad12345 --ports 20-22" 1 "" "Failed to resolve target"
 
 # 24 - larger range to make the scan table grow
 run_test "./wirefish --scan --target $TARGET --ports 1-2000" 0 "PORT  STATE" ""
@@ -147,17 +146,41 @@ run_test "./wirefish --scan --target 10.255.255.1 --ports 1-3" 0 "filtered" ""
 # 28 - scan using default ports (no --ports given)
 run_test "./wirefish --scan --target $TARGET" 0 "PORT  STATE" ""
 
-# 29 - json output on larger range
+# 29 - larger local range with JSON output
 run_test "./wirefish --scan --target $TARGET --ports 1-50 --json" 0 "\"results\"" ""
 
-# 30 - csv output on larger range
+# 30 - larger local range with CSV output
 run_test "./wirefish --scan --target $TARGET --ports 1-50 --csv" 0 "port,state,latency_ms" ""
 
-# 31 - filtered result on unroutable IP with a small range
-run_test "./wirefish --scan --target 10.255.255.1 --ports 1-5" 0 "filtered" ""
+# 31 - filtered result on unroutable IP (single port so timeout is safe)
+run_test "./wirefish --scan --target 10.255.255.1 --ports 1-1" 0 "filtered" ""
 
-# 32 - another DNS failure case with different name
-run_test "./wirefish --scan --target doesnotexist987654 --ports 10-12" 1 "" "Failed to resolve target"
+# 32 - another DNS failure test
+run_test "./wirefish --scan --target doesnt_exist_12345 --ports 10-12" 1 "" "Failed to resolve target"
+
+# 33 - mix of open and filtered ports on google (small range)
+run_test "./wirefish --scan --target google.com --ports 80-82" 0 "open" ""
+
+# 34 - scan single open port on google with JSON
+run_test "./wirefish --scan --target google.com --ports 443-443 --json" 0 "\"results\"" ""
+
+# 35 - scan single open port on google with CSV
+run_test "./wirefish --scan --target google.com --ports 443-443 --csv" 0 "port,state,latency_ms" ""
+
+# 36 - mid-size range on loopback (all filtered or closed, we just check table header)
+run_test "./wirefish --scan --target $TARGET --ports 1-200" 0 "PORT  STATE" ""
+
+# 37 - port at the top of the range on loopback
+run_test "./wirefish --scan --target $TARGET --ports 65535-65535" 0 "65535" ""
+
+# 38 - another unroutable IP
+run_test "./wirefish --scan --target 203.0.113.1 --ports 1-3" 0 "filtered" ""
+
+# 39 - valid hostname with a port that should be filtered
+run_test "./wirefish --scan --target example.com --ports 81-81" 0 "filtered" ""
+
+# 40 - mid-range on loopback with JSON
+run_test "./wirefish --scan --target $TARGET --ports 30-60 --json" 0 "\"results\"" ""
 
 # Cleanup
 rm -f tmp_out tmp_err
