@@ -40,6 +40,8 @@ fmt/        – output formatting for scanner/tracer/monitor
 net/        – generic socket utilities  
 model/      – shared data models and structs  
 timeutil/   – time utilities (ms_now, ms_sleep, timestamp formatting)
+log/        – logging utilities with level-based filtering
+tests/      – automated test suite for all modules
 
 ## Build Instructions
 
