@@ -284,7 +284,28 @@ run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-3 --csv" 1 "" "requires ro
 # 71 - json also ends the same way
 run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-3 --json" 1 "" "requires root privileges"
 
+#######################################
+# icmp 
+#######################################
 
+# 72 - tracer builds the icmp packet before failing at raw socket
+run_test "./wirefish --trace --target 1.1.1.1 --ttl 5-5" 1 "" "requires root privileges"
+
+#######################################
+# net 
+#######################################
+
+# 73 - dns failure inside scan mode
+run_test "./wirefish --scan --target FakeHost555 --ports 1-1" 1 "" "Failed to resolve"
+
+# 74 - scan on loopback with a tiny range 
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1-1" 0 "PORT  STATE" ""
+
+# 75 - unroutable ip gives filtered
+run_test "./wirefish --scan --target 203.0.113.1 --ports 9-9" 0 "filtered" ""
+
+# 76 - raw socket fail checked again
+run_test "./wirefish --trace --target 1.1.1.1 --ttl 1-1" 1 "" "requires root privileges"
 
 
 
