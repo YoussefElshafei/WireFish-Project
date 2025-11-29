@@ -380,7 +380,18 @@ run_test "./wirefish --scan --target 127.0.0.1 --ports 1-3" 0 "PORT  STATE" ""
 # 95 - monitor with auto interface detection
 run_test "./wirefish --monitor --interval 200" 0 ""
 
+#######################################
+# more tracer fail checks 
+#######################################
 
+# 96 - big ttl range, still fails right away at socket
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-30" 1 "" "requires root"
+
+# 97 - csv + big ttl range also fails right away
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-30 --csv" 1 "" "requires root"
+
+# 98 - json + big ttl range same thing
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-30 --json" 1 "" "requires root"
 
 # Cleanup
 rm -f tmp_out tmp_err
