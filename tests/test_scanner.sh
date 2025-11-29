@@ -358,6 +358,15 @@ run_test "./wirefish --scan --target 127.0.0.1 --ports 1-1 --ttl 5-10" 0 "PORT  
 # 89 - reversed ports again
 run_test "./wirefish --scan --target 127.0.0.1 --ports 10-1" 1 "" "cannot be greater"
 
+# 90 - forgot value after ttl
+run_test "./wirefish --trace --target 8.8.8.8 --ttl" 1 "" "requires a range"
+
+# 91 - forgot value after ports
+run_test "./wirefish --scan --target 127.0.0.1 --ports" 1 "" "Error: --ports requires"
+
+# 92 - forgot iface name
+run_test "./wirefish --monitor --iface" 1 "" "requires an interface name"
+
 
 # Cleanup
 rm -f tmp_out tmp_err
