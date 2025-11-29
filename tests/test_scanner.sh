@@ -458,6 +458,78 @@ run_test "./wirefish --monitor --iface lo --interval 100" 0 "IFACE" ""
 # 117 - another small scan range to hit formatting path again
 run_test "./wirefish --scan --target 127.0.0.1 --ports 50-52" 0 "PORT  STATE" ""
 
+#######################################
+# cli tests
+#######################################
+
+# 118 - invalid characters inside range before dash (tests parse_range endptr!=dash)
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1x-10" 1 "" "Invalid characters in range"
+
+# 119 - invalid characters after dash (tests parse_range invalid number after dash)
+run_test "./wirefish --scan --target 127.0.0.1 --ports 10-9x" 1 "" "Invalid characters at end of range"
+
+# 120 - range without dash at all (parse_range dash==NULL)
+run_test "./wirefish --scan --target 127.0.0.1 --ports 123" 1 "" "Range must be in format"
+
+# 121 - missing target after --target 
+run_test "./wirefish --scan --target" 1 "" "Error: --target requires"
+
+# 122 - missing ports value 
+run_test "./wirefish --scan --target 127.0.0.1 --ports" 1 "" "Error: --ports requires"
+
+# 123 - missing ttl value 
+run_test "./wirefish --trace --target 8.8.8.8 --ttl" 1 "" "Error: --ttl requires"
+
+# 124 - missing iface value (tests --iface requires)
+run_test "./wirefish --monitor --iface" 1 "" "Error: --iface requires"
+
+# 125 - missing interval value (tests --interval requires)
+run_test "./wirefish --monitor --interval" 1 "" "Error: --interval requires"
+
+# 126 - invalid number before dash 
+run_test "./wirefish --scan --target 127.0.0.1 --ports x5-10" 1 "" "Invalid number before"
+
+# 127 - invalid number aftrer dash 
+run_test "./wirefish --scan --target 127.0.0.1 --ports 5-x10" 1 "" "Invalid number after"
+
+# 128 - interval invalid letters inside argument tests strtol != number
+run_test "./wirefish --monitor --interval xyz" 1 "" "Invalid interval value"
+
+# 129 - interval < 0 inside final monitor block 
+run_test "./wirefish --monitor --interval -5" 1 "" "Interval must be positive"
+
+# 130 - interval zero also hits final validate block
+run_test "./wirefish --monitor --interval 0" 1 "" "Interval must be positive"
+
+# 131 - duplicate mode error specifically triggered on monitor 
+run_test "./wirefish --scan --monitor --target 127.0.0.1 --ports 1-1" 1 "" "Only one mode"
+
+# 132 - help printing 
+run_test "./wirefish --help" 0 "Usage: wirefish" ""
+
+# 133 - test unknown argument error path 
+run_test "./wirefish --unknownFlag" 1 "" "Unknown argument"
+
+# 134 - scan with botg json & csv 
+run_test "./wirefish --scan --target 127.0.0.1 --ports 5-5 --json --csv" 1 "" "Cannot use both"
+
+# 135 - trace with BOTH json & csv 
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-5 --json --csv" 1 "" "Cannot use both"
+
+# 136 - monitor with BOTH json & csv
+run_test "./wirefish --monitor --interval 100 --json --csv" 1 "" "Cannot use both"
+
+# 137 - scan port outside valid range error inside SCAN block
+run_test "./wirefish --scan --target 127.0.0.1 --ports 0-10" 1 "" "Ports must be in range"
+
+# 138 - > 65535
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1-99999" 1 "" "Ports must be in range"
+
+# 139 - trace TTL < minimum  hit TTL range error
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 0-5" 1 "" "TTL values must be in range"
+
+# 140 - trace TTL > maximum  error path again
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-500" 1 "" "TTL values must be in range"
 
 
 
