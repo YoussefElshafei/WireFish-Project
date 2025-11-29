@@ -403,6 +403,70 @@ run_test "./wirefish --scan --ports 1-3" 1 "" "target required"
 # 100 - trace without target
 run_test "./wirefish --trace --ttl 1-3" 1 "" "target required"
 
+#######################################
+# trying app.c full
+#######################################
+
+# 101 - invalid iface causes monitor_run to fail (hits run_monitor error path)
+run_test "./wirefish --monitor --iface definitelynotrealXYZ --interval 100" 1 "" "monitor mode failed"
+
+# 102 - monitor json formatting branch
+run_test "./wirefish --monitor --interval 100 --json" 0 "{" ""
+
+# 103 - monitor csv formatting branch
+run_test "./wirefish --monitor --interval 100 --csv" 0 "iface,rx_bytes" ""
+
+# 104 - scan json formatting branch 
+run_test "./wirefish --scan --target 127.0.0.1 --ports 9-9 --json" 0 "\"results\"" ""
+
+# 105 - scan csv formatting branch
+run_test "./wirefish --scan --target 127.0.0.1 --ports 9-9 --csv" 0 "port,state,latency_ms" ""
+
+# 106 - force scan_run failure path (bad DNS)
+run_test "./wirefish --scan --target invalidhostnameZZZ --ports 10-10" 1 "" "Scan failed"
+
+# 107 - normal scan table format again
+run_test "./wirefish --scan --target 127.0.0.1 --ports 5-7" 0 "PORT  STATE" ""
+
+# 108 - monitor with tiny interval collects a bunch of samples
+run_test "./wirefish --monitor --interval 10 --duration 1" 0 "IFACE" ""
+
+# 109 - monitor auto-detect path again (iface = NULL)
+run_test "./wirefish --monitor --interval 50" 0 "" ""
+
+# 110 - tracer always fails raw socket, hits run_trace failure block
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-1" 1 "" "Traceroute failed"
+
+# 111 - tracer csv still errors before formatting
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-1 --csv" 1 "" "Traceroute failed"
+
+# 112 - tracer json still errors before formatting
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-1 --json" 1 "" "Traceroute failed"
+
+# 113 - scan with nice clean target path
+run_test "./wirefish --scan --target 127.0.0.1 --ports 100-100" 0 "PORT  STATE" ""
+
+# 114 - very large interval tests duration rounding (line 96 in app.c)
+run_test "./wirefish --monitor --interval 5000" 0 "IFACE" ""
+
+# 115 - weird iface name to trigger error inside monitor_run
+run_test "./wirefish --monitor --iface '!!!!' --interval 100" 1 "" "Error" 
+
+# 116 - scanning a bigger range to force ScanTable realloc more times
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1-3000" 0 "PORT  STATE" ""
+
+# 117 - monitor json with multiple samples
+run_test "./wirefish --monitor --interval 20 --duration 1 --json" 0 "{" ""
+
+# 118 - filtered scan path (unroutable IP)
+run_test "./wirefish --scan --target 203.0.113.1 --ports 2-2" 0 "filtered" ""
+
+# 119 - long-ish but valid iface name ) works fine
+run_test "./wirefish --monitor --iface lo --interval 100" 0 "IFACE" ""
+
+# 120 - scan another range again hitting table formatting
+run_test "./wirefish --scan --target 127.0.0.1 --ports 50-52" 0 "PORT  STATE" ""
+
 
 # Cleanup
 rm -f tmp_out tmp_err
