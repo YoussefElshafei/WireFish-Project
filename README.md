@@ -118,16 +118,16 @@ rate_bps = (delta_bytes * 8) / delta_time_sec
   --help              Show this help message
   
 ### Traceroute
---trace <hostname or IP>
+--trace (hostname or IP)
 
 ### Monitor
 --monitor  
---iface <name>         (eth0, wlan0, etc.)  
---interval <ms>  
---duration <seconds>   (0 = infinite)
+--iface (name)         (eth0, wlan0, etc.)  
+--interval (ms)  
+--duration (seconds)   (0 = infinite)
 
 ### Scanner
---scan --subnet <CIDR>
+--scan --subnet (CIDR)
 
 ## Makefile Notes
 Compiles and links all modules:
