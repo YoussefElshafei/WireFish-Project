@@ -43,6 +43,15 @@ timeutil/   – time utilities (ms_now, ms_sleep, timestamp formatting)
 log/        – logging utilities with level-based filtering
 tests/      – automated test suite for all modules
 
+### Log
+## Contains the logging subsystem for debugging and runtime diagnostics:
+- log.c / log.h: Printf-style logging with configurable severity levels
+- Levels: LOG_DEBUG (0), LOG_INFO (1), LOG_WARN (2), LOG_ERROR (3)
+- Functions: log_debug(), log_info(), log_warn(), log_error()
+- Filtering: Set minimum level with log_set_level() to control verbosity
+- Output: All messages written to stderr with level tags (e.g., [debug], [error])
+- Usage: Supports variadic arguments for formatted logging (e.g., log_info("Port %d is %s", port, state))
+
 ## Build Instructions
 
 ### Requirements
