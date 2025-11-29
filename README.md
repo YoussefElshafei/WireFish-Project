@@ -61,6 +61,7 @@ tests/      – automated test suite for all modules
 
 ### Build
 make
+./makefile
 
 ### Run Examples
 ./wirefish --trace google.com  
