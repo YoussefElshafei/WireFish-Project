@@ -89,31 +89,31 @@ rate_bps = (delta_bytes * 8) / delta_time_sec
   
   --monitor           Network interface monitoring
 
-Scan Options:
+## Scan Options:
 
   --target <host>     Target hostname or IP (required)
   
   --ports <from-to>   Port range (default: 1-1024)
 
-Trace Options:
+## Trace Options:
 
   --target <host>     Target hostname or IP (required)
   
   --ttl <start-max>   TTL range (default: 1-30)
 
-Monitor Options:
+## Monitor Options:
 
   --iface <name>      Network interface (default: auto-detect)
   
   --interval <ms>     Sample interval in milliseconds (default: 100)
 
-Output Options:
+## Output Options:
 
   --json              Output in JSON format
   
   --csv               Output in CSV format
 
-Other:
+## Other:
 
   --help              Show this help message
   
