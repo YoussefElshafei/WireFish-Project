@@ -307,6 +307,18 @@ run_test "./wirefish --scan --target 203.0.113.1 --ports 9-9" 0 "filtered" ""
 # 76 - raw socket fail checked again
 run_test "./wirefish --trace --target 1.1.1.1 --ttl 1-1" 1 "" "requires root privileges"
 
+#######################################
+# config tests (kind of)
+#######################################
+
+# 77 - json + csv not allowed on trace either
+run_test "./wirefish --trace --target 8.8.8.8 --json --csv" 1 "" "Cannot use both"
+
+# 78 - weird characters in port range
+run_test "./wirefish --scan --target 127.0.0.1 --ports 5-XYZ" 1 "" "Invalid number"
+
+# 79 - iface name is messed up so monitor errors
+run_test "./wirefish --monitor --iface !!?!weird!! --interval 100" 1 "" "Interface"
 
 
 
