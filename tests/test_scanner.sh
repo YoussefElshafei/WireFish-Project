@@ -234,7 +234,7 @@ run_test "./wirefish --monitor --iface aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 # 56 - big but safe interval that still returns 
 run_test "./wirefish --monitor --interval 2000" 0 "IFACE" ""
 
-# 57 - missing interval value
+# 57 - missing interval value 
 run_test "./wirefish --monitor --interval" 1 "" "Error: --interval requires a number (milliseconds)"
 
 # 58 - missing iface value
@@ -320,7 +320,24 @@ run_test "./wirefish --scan --target 127.0.0.1 --ports 5-XYZ" 1 "" "Invalid numb
 # 79 - iface name is messed up so monitor errors
 run_test "./wirefish --monitor --iface !!?!weird!! --interval 100" 1 "" "Interface"
 
+#######################################
+# format testing
+#######################################
 
+# 80 - monitor in csv mode should print header
+run_test "./wirefish --monitor --interval 200 --csv" 0 "iface,rx_bytes" ""
+
+# 81 - scan csv header check
+run_test "./wirefish --scan --target 127.0.0.1 --ports 2-2 --csv" 0 "port,state,latency_ms" ""
+
+# 82 - scan json check
+run_test "./wirefish --scan --target 127.0.0.1 --ports 2-2 --json" 0 "\"results\"" ""
+
+# 83 - monitor json output starts with {
+run_test "./wirefish --monitor --interval 200 --json" 0 "{" ""
+
+# 84 - scan table format just needs the main header
+run_test "./wirefish --scan --target 127.0.0.1 --ports 3-3" 0 "PORT  STATE" ""
 
 # Cleanup
 rm -f tmp_out tmp_err
