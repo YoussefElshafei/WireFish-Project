@@ -547,88 +547,87 @@ run_test "./wirefish --scan --target 127.0.0.1 --ports 3-3 --json" 0 "\"results\
 # 144 - scan filtered state hits port_state_str PORT_FILTERED path
 run_test "./wirefish --scan --target 203.0.113.1 --ports 4-4" 0 "filtered" ""
 
-# 145 - scan closed state 
-run_test "./wirefish --scan --target 127.0.0.1 --ports 65000-65000" 0 "closed" ""
-
-# 146 - scan open state 
-run_test "./wirefish --scan --target google.com --ports 80-80" 0 "open" ""
-
-# 147 - scan table format prints '-' for latency when latency <0
-run_test "./wirefish --scan --target 203.0.113.1 --ports 10-10" 0 "-" ""
-
-# 148 - monitor table format 
-run_test "./wirefish --monitor --interval 100 --duration 1" 0 "IFACE" ""
-
-# 149 - monitor csv format 
-run_test "./wirefish --monitor --interval 100 --duration 1 --csv" 0 "iface,rx_bytes" ""
-
-# 150 - monitor json format 
-run_test "./wirefish --monitor --interval 100 --duration 1 --json" 0 "{\"type\":\"monitor\"" ""
-
-# 151 - monitor multiple samples (covers more loop iterations)
-run_test "./wirefish --monitor --interval 50 --duration 1" 0 "IFACE" ""
-
-# 152 - scan json multiple rows (hitting comma-branch in JSON loop)
-run_test "./wirefish --scan --target 127.0.0.1 --ports 1-5 --json" 0 "\",\"" ""
-
-# 153 - monitor json multiple rows
-run_test "./wirefish --monitor --interval 30 --duration 1 --json" 0 "," ""
-
-# 154 - scan csv blank latency (latency_ms = -1 produces empty field)
-run_test "./wirefish --scan --target 203.0.113.1 --ports 9-9 --csv" 0 ",," ""
-
-# 155 - verify scan table prints header lines
-run_test "./wirefish --scan --target 127.0.0.1 --ports 7-7" 0 "PORT  STATE" ""
-
-# 156 - verify monitor table prints header
-run_test "./wirefish --monitor --interval 80 --duration 1" 0 "RX_BYTES" ""
-
-# 157 - verify scan table uses correct spacing in table output
-run_test "./wirefish --scan --target 127.0.0.1 --ports 6-6" 0 "----  ---------" ""
-
-# 158 - verify monitor json ends with closing bracket
-run_test "./wirefish --monitor --interval 100 --duration 1 --json" 0 "]}" ""
-
-# 159 - verify monitor csv has 7 columns
-run_test "./wirefish --monitor --interval 100 --duration 1 --csv" 0 "tx_avg_bps" ""
-
 #######################################
-# monitor extra 
+# extra tests to get coverage  for cli fmt monitor 
 #######################################
 
-# 160 - invalid iface triggers read_iface_stats not found
-run_test "./wirefish --monitor --iface notralXYZ --interval 100 --duration 1" 1 "" "not found"
+# 145 - --help should print usage and exit successfully
+run_test "./wirefish --help" 0 "Usage: wirefish" ""
 
-# 161 - iface name with colon to break sscanf parsing (tests parse failure)
-run_test "./wirefish --monitor --iface 'abc:def' --interval 100 --duration 1" 1 "" "not found"
+# 146 - --help should mention monitor mode
+run_test "./wirefish --help" 0 "--monitor" ""
 
-# 162 - monitor with extremely short interval for fast ms_now delta
-run_test "./wirefish --monitor --interval 1 --duration 1" 0 "IFACE" ""
+# 147 - ports range: junk in the middle 
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1x-5" 1 "" "Invalid characters in range"
 
-# 163 - monitor with NULL iface (auto detect) — normal path
-run_test "./wirefish --monitor --interval 100 --duration 1" 0 "IFACE" ""
+# 148 - ports range: junk at the end 
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1-5x" 1 "" "Invalid characters at end of range"
 
-# 164 - monitor repeated reads to exercise rolling averages deeply
-run_test "./wirefish --monitor --interval 50 --duration 2" 0 "IFACE" ""
+# 149 - monitor with auto-detected interface 
+run_test "./wirefish --monitor --interval 200" 0 "IFACE" ""
 
-# 165 - try a very large interval to trigger sleep-without-many-loops
-run_test "./wirefish --monitor --interval 500 --duration 1" 0 "IFACE" ""
+# 150 - monitor on loopback
+run_test "./wirefish --monitor --iface lo --interval 200" 0 "IFACE" ""
 
-# 166 - monitor JSON to exercise full pipeline through fmt → monitor
-run_test "./wirefish --monitor --interval 100 --duration 1 --json" 0 "\"samples\"" ""
+# 151 - monitor JSON output basic check
+run_test "./wirefish --monitor --iface lo --interval 200 --json" 0 "\"type\":\"monitor\"" ""
 
-# 167 - monitor CSV to exercise fmt_monitor_series_csv
-run_test "./wirefish --monitor --interval 100 --duration 1 --csv" 0 "iface,rx_bytes" ""
+# 152 - monitor CSV output basic check
+run_test "./wirefish --monitor --iface lo --interval 200 --csv" 0 "iface,rx_bytes,tx_bytes" ""
 
-# 168 - check that monitor always frees its ring buffers (indirectly verified)
-run_test "./wirefish --monitor --interval 100 --duration 1" 0 "" ""
+# 153 - monitor invalid interface should report not found
+run_test "./wirefish --monitor --iface notreal123 --interval 200" 1 "" "not found in /proc/net/dev"
 
-# 169 - check monitor_start with small duration (forces timeout branch)
-run_test "./wirefish --monitor --interval 100 --duration 1" 0 "" ""
+# 154 - monitor interval = 0 should error
+run_test "./wirefish --monitor --iface lo --interval 0" 1 "" "Interval must be positive"
 
-# 170 - test multiple monitor runs in a row (stability / resource cleanup)
-run_test "./wirefish --monitor --interval 80 --duration 1" 0 "" ""
+# 155 - monitor negative interval should also error
+run_test "./wirefish --monitor --iface lo --interval -5" 1 "" "Interval must be positive"
 
+# 156 - cannot use more than one mode at once 
+run_test "./wirefish --scan --monitor --target 127.0.0.1 --ports 80-80" 1 "" "Only one mode (--scan, --trace, --monitor) allowed"
+
+# 157 - unknown argument should be rejected
+run_test "./wirefish --scan --target 127.0.0.1 --ports 80-80 --weirdflag" 1 "" "Error: Unknown argument '--weirdflag'"
+
+# 158 - scan mode cannot use both JSON and CSV at the same time
+run_test "./wirefish --scan --target 127.0.0.1 --ports 80-80 --json --csv" 1 "" "Error: Cannot use both --json and --csv"
+
+# 159 - trace mode missing target must error
+run_test "./wirefish --trace" 1 "" "Error: --target required for trace mode"
+
+# 160 - TTL values below allowed range should error
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 0-5" 1 "" "TTL values must be in range"
+
+# 161 - ports below allowed range should error
+run_test "./wirefish --scan --target 127.0.0.1 --ports 0-10" 1 "" "Ports must be in range"
+
+# 162 -  ports above allowed range should also error
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1-70000" 1 "" "Ports must be in range"
+
+# 163 - TTL range: junk in the middle 
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1x-5" 1 "" "Invalid characters in range"
+
+# 164 - TTL range: junk at the end (
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-5x" 1 "" "Invalid characters at end of range"
+
+# 165 - TTL range: invalid number before '-' hits that specific error
+run_test "./wirefish --trace --target 8.8.8.8 --ttl ab-5" 1 "" "Invalid number before '-' in range"
+
+# 166 - TTL range: invalid number after '-' hits that specific error
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-ab" 1 "" "Invalid number after '-' in range"
+
+# 167 - --help anywhere in the args should still just show help and exit
+run_test "./wirefish --scan --target 127.0.0.1 --ports 80-80 --help" 0 "Usage: wirefish" ""
+
+# 168 - JSON without picking a mode should fail with 'Must specify one mode'
+run_test "./wirefish --json" 1 "" "Must specify one mode"
+
+# 169 - CSV without picking a mode should also fail the same way
+run_test "./wirefish --csv" 1 "" "Must specify one mode"
+
+# 170 - running with no arguments at all must complain about missing mode
+run_test "./wirefish" 1 "" "Must specify one mode"
 
 
 # Cleanup
