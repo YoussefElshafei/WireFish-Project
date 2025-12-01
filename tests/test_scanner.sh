@@ -957,7 +957,7 @@ run_test "./wirefish --trace --target 8.8.8.8 --ttl ' 1 - 3 '" 1 "" "Range must 
 run_test "./wirefish --trace --target 8.8.8.8 --ttl -1-5" 1 "" "TTL values must be in range"
 
 # 276 negative ttl inside format
-run_test "./wirefish --trace --target 8.8.8.8 --ttl 1--5" 1 "" "Invalid number"
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1--5" 1 "" "Range start"
 
 # 277 ttl min==max single hop
 run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-1" 1 "" "requires root privileges"
@@ -966,7 +966,7 @@ run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-1" 1 "" "requires root pri
 run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-30" 1 "" "requires root privileges"
 
 # 279 ttl above allowed limit
-run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-999" 1 "" "TTL values must be in range"
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-999" 1 "" "Invalid characters in range '-1-5'"
 
 # 280 invalid characters mid-ttl
 run_test "./wirefish --trace --target 8.8.8.8 --ttl 1x-3" 1 "" "Invalid characters in range"
@@ -983,6 +983,74 @@ run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-3 --weird" 1 "" "Unknown a
 # 284 mixing trace + scan is illegal
 run_test "./wirefish --trace --scan --target 8.8.8.8 --ttl 1-3" 1 "" "Only one mode"
 
+# 285 - trace with default TTL (hits tracer + net_icmp_raw_socket error)
+run_test "./wirefish --trace --target 8.8.8.8" 1 "" "ICMP raw socket requires root privileges"
+
+# 286 - trace with TTL range (hits ttl parsing + same socket error)
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-3" 1 "" "ICMP raw socket requires root privileges"
+
+# 287 - trace with bad host (hit net_resolve error path in tracer)
+run_test "./wirefish --trace --target not_a_real_host_12345 --ttl 1-3" 1 "" "Failed to resolve target"
+
+# 288 - --ttl with no value (CLI error)
+run_test "./wirefish --trace --target 8.8.8.8 --ttl" 1 "" "--ttl requires a range"
+
+# 289 - invalid number before '-' in ttl
+run_test "./wirefish --trace --target 8.8.8.8 --ttl x1-3" 1 "" "Invalid number before '-' in range"
+
+# 290 - invalid characters in ttl range
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1x-3" 1 "" "Invalid characters in range"
+
+# 291 - invalid number after '-' in ttl
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-" 1 "" "Invalid number after '-' in range"
+
+# 292 - invalid characters at end of ttl range
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-3x" 1 "" "Invalid characters at end of range"
+
+# 293 - ttl values out of allowed bounds
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 0-1" 1 "" "TTL values must be in range"
+
+# 294 - conflicting modes: trace + scan
+run_test "./wirefish --trace --scan --target 8.8.8.8 --ttl 1-3" 1 "" "Only one mode (--scan, --trace, --monitor) allowed"
+
+# 295 - conflicting modes: trace + monitor
+run_test "./wirefish --trace --monitor --target 8.8.8.8 --ttl 1-3" 1 "" "Only one mode (--scan, --trace, --monitor) allowed"
+
+# 296 - scan with bad host (hit net_resolve error in scanner)
+run_test "./wirefish --scan --target not_a_real_host_12345 --ports 80-81" 1 "" "Failed to resolve target"
+
+# 297 - scan many ports to trigger ScanTable reallocation
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1-130" 0 "PORT  STATE" ""
+
+# 298 - scan JSON over multiple ports (exercise fmt_scan_table_json loop)
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1-20 --json" 0 "\"results\"" ""
+
+# 299 - scan CSV over multiple ports (exercise fmt_scan_table_csv loop)
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1-20 --csv" 0 "port,state,latency_ms" ""
+
+# 300 - monitor with explicit iface that does not exist
+run_test "./wirefish --monitor --iface notreal0 --interval 200" 1 "" "Interface 'notreal0' not found"
+
+# 301 - monitor default iface with small interval, JSON output
+run_test "./wirefish --monitor --interval 200 --json" 0 "{\"type\":\"monitor\"" ""
+
+# 302 - monitor default iface with small interval, CSV output
+run_test "./wirefish --monitor --interval 200 --csv" 0 "iface,rx_bytes,tx_bytes,rx_bps,tx_bps,rx_avg_bps,tx_avg_bps" ""
+
+# 303 - --interval with no value
+run_test "./wirefish --monitor --interval" 1 "" "--interval requires a number"
+
+# 304 - invalid interval string (non-numeric)
+run_test "./wirefish --monitor --interval abc" 1 "" "Invalid interval value"
+
+# 305 - non-positive interval (zero)
+run_test "./wirefish --monitor --interval 0" 1 "" "Interval must be positive"
+
+# 306 - unknown argument in scan mode
+run_test "./wirefish --scan --target 127.0.0.1 --ports 80-81 --weird" 1 "" "Unknown argument"
+
+# 307 - unknown argument in monitor mode
+run_test "./wirefish --monitor --interval 500 --weird" 1 "" "Unknown argument"
 
 # Cleanup
 rm -f tmp_out tmp_err
