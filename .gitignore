@@ -8,14 +8,7 @@
 
 # Executables
 wirefish
-*.exe
-*.out
-*.elf
-
-# Libraries
-*.a
-*.so
-*.dll
+wirefish-test
 
 # ============================================
 # GCOV / Coverage Files
@@ -26,35 +19,4 @@ wirefish
 *.gcno
 *.gcov
 
-# ============================================
-# Compiler & Editor Stuff
-# ============================================
-
-# Debug files
-*.dSYM/
-*.stackdump
-
-# VSCode settings
-.vscode/
-
-# Backup / temp files
-*~
-*.tmp
-*.swp
-*.swo
-
-# ============================================
-# Build directories
-# ============================================
-
-build/
-dist/
-bin/
-obj/
-
-# ============================================
-# Logs
-# ============================================
-
-*.log
 

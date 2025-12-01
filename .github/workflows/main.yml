@@ -17,7 +17,7 @@ jobs:
     - name: Upload wirefish Executable
       uses: actions/upload-artifact@v4
       with:
-        name: wirefish Executable
+        name: Wirefish Executable
         path: ./wirefish
 
   # ===== Job 2: Test and Coverage =====
@@ -31,34 +31,19 @@ jobs:
     - name: Build wirefish-test (with coverage)
       run: make wirefish-test
 
-    - name: Create symlink for test script
-      run: ln -sf wirefish-test wirefish
-
     - name: Make test script executable
       run: chmod +x ./tests/test_scanner.sh
 
     - name: Run test script
-      run: |
-        ./tests/test_scanner.sh > test_results.txt 2>&1 || true
-        echo "Test script completed"
+      run: ./tests/test_scanner.sh > test_results.txt
 
     - name: Run gcov coverage reports
       if: ${{ always() }}
       run: |
-        # First, list all object files to see what's available
-        echo "=== Available object files ==="
-        find . -name "*.gcno" -o -name "*.gcda" | head -20
-        
-        echo "=== Running gcov on specific files ==="
-        # Run gcov on the main test binary to generate coverage for all sources
-        gcov -o . wirefish-test 2>/dev/null || true
-        
-        # Alternative: Run gcov on all object files
-        echo "=== Running gcov on all gcda files ==="
-        find . -name "*.gcda" -exec gcov {} \; 2>/dev/null || true
-        
-        echo "=== Generated gcov files ==="
-        ls -la *.gcov 2>/dev/null || echo "No gcov files generated"
+        for file in *.c
+        do
+          gcov "wirefish-test-$file"
+        done
 
     - name: Upload Test Results
       if: ${{ always() }}
@@ -73,4 +58,3 @@ jobs:
       with:
         name: Coverage Reports
         path: ./*.gcov
-      continue-on-error: true
