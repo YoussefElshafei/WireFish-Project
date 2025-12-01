@@ -32,7 +32,7 @@ jobs:
       run: make wirefish-test
 
     - name: Create symlink for test script
-      run: ln -sf wirefish-test wirefish
+      run: cp wirefish-test wirefish
 
     - name: Make test script executable
       run: chmod +x ./tests/test_scanner.sh
