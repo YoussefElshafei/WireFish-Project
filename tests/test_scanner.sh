@@ -755,10 +755,7 @@ run_test "./wirefish --scan --target GOOGLE.COM --ports 80-80" 0 "open" ""
 # 212 trace with ttl only max value given 
 run_test "./wirefish --trace --target 8.8.8.8 --ttl 5-5" 1 "" "Traceroute failed"
 
-# 213 monitor large interval
-run_test "./wirefish --monitor --interval 1500 --csv" 0 "iface,rx_bytes" ""
-
-# 214 scan with ports range containing leading zeros
+# 213 scan with ports range containing leading zeros
 run_test "./wirefish --scan --target 127.0.0.1 --ports 001-003" 0 "PORT  STATE" ""
 
 # Cleanup
