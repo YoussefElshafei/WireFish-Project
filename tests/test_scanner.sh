@@ -629,6 +629,65 @@ run_test "./wirefish --csv" 1 "" "Must specify one mode"
 # 170 - running with no arguments at all must complain about missing mode
 run_test "./wirefish" 1 "" "Must specify one mode"
 
+# 171 - trace with default TTL 
+run_test "./wirefish --trace --target 8.8.8.8" 1 "" "requires root privileges"
+
+# 172 - trace and json with default TTL
+run_test "./wirefish --trace --target 8.8.8.8 --json" 1 "" "requires root privileges"
+
+# 173 - trace and csv with default TTL
+run_test "./wirefish --trace --target 8.8.8.8 --csv" 1 "" "requires root privileges"
+
+# 174 - monitor: iface given + ttl + json
+run_test "./wirefish --monitor --iface lo --ttl 1-5 --interval 200 --json" 0 "{" ""
+
+# 175 - monitor: iface given + tt + csv
+run_test "./wirefish --monitor --iface lo --ttl 1-5 --interval 200 --csv" 0 "iface,rx_bytes,tx_bytes" ""
+
+# 176 - scan: give ttl (ignored) + json, on loopback
+run_test "./wirefish --scan --target $TARGET --ports 5-7 --ttl 2-5 --json" 0 "\"results\"" ""
+
+# 177 - scan: give ttl (ignored) + csv, on loopback
+run_test "./wirefish --scan --target $TARGET --ports 5-7 --ttl 2-5 --csv" 0 "port,state,latency_ms" ""
+
+# 178 - monitor: tiny interval so it collects quickly
+run_test "./wirefish --monitor --interval 1" 0 "IFACE" ""
+
+# 179 - monitor: tiny interval + json
+run_test "./wirefish --monitor --interval 1 --json" 0 "{" ""
+
+# 180 - monitor: tiny interval + csv
+run_test "./wirefish --monitor --interval 1 --csv" 0 "iface,rx_bytes" ""
+
+# 181 - scan: json flag before mode (checks we don't depend on arg order)
+run_test "./wirefish --json --scan --target $TARGET --ports 1-3" 0 "\"results\"" ""
+
+# 182 - scan: csv flag before mode
+run_test "./wirefish --csv --scan --target $TARGET --ports 1-3" 0 "port,state,latency_ms" ""
+
+# 183 - monitor: json flag before mode
+run_test "./wirefish --json --monitor --interval 200" 0 "{" ""
+
+# 184 - monitor: csv flag before mode
+run_test "./wirefish --csv --monitor --interval 200" 0 "iface,rx_bytes" ""
+
+# 185 - scan: mode at end to make sure parsing still behaves
+run_test "./wirefish --target $TARGET --ports 1-3 --scan" 0 "PORT  STATE" ""
+
+# 186 - monitor: mode at end
+run_test "./wirefish --interval 200 --monitor" 0 "IFACE" ""
+
+# 187 - trace: mode at end (still hits raw-socket fail)
+run_test "./wirefish --target 8.8.8.8 --ttl 1-3 --trace" 1 "" "requires root privileges"
+
+# 188 - scan: long but safe loopback range to re-hit realloc in ScanTable
+run_test "./wirefish --scan --target $TARGET --ports 1-1500" 0 "PORT  STATE" ""
+
+# 189 - monitor: weird but valid-ish iface name trimmed to buffer size
+run_test "./wirefish --monitor --iface looooooooooooooooooooooooooooo --interval 200" 1 "" "Interface" ""
+
+# 190 - help still works even with stray json
+run_test "./wirefish --help --json" 0 "Usage: wirefish" ""
 
 # Cleanup
 rm -f tmp_out tmp_err
