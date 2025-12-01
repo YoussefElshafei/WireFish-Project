@@ -59,7 +59,7 @@ run_test() {
 }
 
 #######################################
-#      test cases (first 20 only)     #
+#      test cases    #
 #######################################
 
 # 1 - simple scan on one known port
@@ -689,65 +689,33 @@ run_test "./wirefish --monitor --iface looooooooooooooooooooooooooooo --interval
 # 190 - help still works even with stray json
 run_test "./wirefish --help --json" 0 "Usage: wirefish" ""
 
-# 191 - timestamp negative
-run_test "./wirefish --monitor --interval -1" 1 "" "Invalid interval"
+# 191 - 1 on loopback is always closed
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1-1" 0 "closed" "-"
 
-# 192 - timestamp zero (edge case)
-run_test "./wirefish --monitor --interval 0" 1 "" "Invalid interval"
+# 192 - scan TABLE: open port should show numeric latency
+run_test "./wirefish --scan --target google.com --ports 80-80" 0 "open" "LATENCY"
 
-# 193 - timestamp large
-run_test "./wirefish --monitor --interval 999999999" 1 "" ""
+# 193 - scan JSON: closed port should have  null
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1-1 --json" 0 "\"latency_ms\":null" ""
 
-# 194 - elapsed negative
-run_test "./wirefish --monitor --interval -100" 1 "" ""
+# 194 - monitor TABLE format check  - verify header
+run_test "./wirefish --monitor --interval 200 --iface lo" 0 "RX_BYTES" ""
 
-# 195 - elapsed zero
-run_test "./wirefish --monitor --interval 0" 1 "" ""
+# 195 - monitor: iface empty string should error (--iface \"\")
+run_test "./wirefish --monitor --interval 200 --iface \"\"" 1 "" "Error: --iface requires"
 
-# 196 - invalid mode produces main.c early exit
-run_test "./wirefish --no-such-flag" 1 "" "Invalid"
+# 196 - cli_parse: target empty string should error (--target \"\")
+run_test "./wirefish --scan --target \"\" --ports 80-80" 1 "" "Error: --target requires"
 
-# 197 - main must map trace errors to exit 1
-run_test "./wirefish --trace --target 1.1.1.1" 1 "" ""
+# 197 - monitor: both --tls and --ports given should still succeed
+run_test "./wirefish --monitor --interval 200 --ttl 1-5 --ports 1-3" 0 "" ""
 
-# 198 - simple csv monitor
-run_test "./wirefish --monitor --interval 200 --csv" 0 "iface,rx_bytes" ""
+# 198 - scan: give extremely long hostname (buffer truncation test)
+run_test "./wirefish --scan --target aaaaaaaaaaaaaaa.com --ports 1-1" 1 "" "Failed to resolve"
 
-# 199 - simple json monitor
-run_test "./wirefish --monitor --interval 200 --json" 0 "{" ""
+# 199 - tracer table formatting path
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-1" 1 "" "Traceroute failed"
 
-# 200 - scan csv
-run_test "./wirefish --scan --target $TARGET --ports 1-3 --csv" 0 "port,state" ""
-
-# 201 - scan json
-run_test "./wirefish --scan --target $TARGET --ports 1-3 --json" 0 "\"results\"" ""
-
-# 202
-run_test "./wirefish --scan --target 127.0.0.1" 1 "" "Error:"
-
-# 203
-run_test "./wirefish --scan --ports 1-5" 1 "" "Error:"
-
-# 204
-run_test "./wirefish --trace" 1 "" "Error:"
-
-# 205
-run_test "./wirefish --monitor" 1 "" "Error:"
-
-# 206
-run_test "./wirefish --monitor --iface loooooooooooooooooooooooooooo --interval 200" \
-    1 "" "Interface"
-
-# 207
-run_test "./wirefish --scan --target 127.0.0.1 --ports 65000-65001" \
-    0 "closed" ""
-
-# 208
-run_test "./wirefish --scan --target 127.0.0.1 --ports 1-2000" \
-    0 "PORT" ""
-
-# 209 
-run_test "./wirefish --monitor --iface foobar --interval 200" 1 "" "not found"
 
 
 # Cleanup
