@@ -43,7 +43,7 @@ The **scanner** and **traceroute** modules use **Raw Sockets** to gain low-level
 ### Reading Interface Stats (Rate Calculation)
 The monitor module computes the network speed using the counters read from `/proc/net/dev`.
 The rate calculation is:
-$$\text{rate}_{\text{bps}} = \frac{(\Delta \text{bytes} \times 8)}{\Delta t_{\text{sec}}}$$
+**rate**<sub>bps</sub> = (Δbytes × 8) / Δt<sub>sec</sub>
 
 ### Modular C Design
 The project structure enforces clean separation of duties, such as the clear split between the core logic (`monitor.c`, `tracer.c`) and the output formatting (`fmt.c`), making the code easy to understand and maintain.
