@@ -5,8 +5,27 @@ on:
     branches: [ "main" ]
 
 jobs:
+
+  # ===== Job 1: Build and Upload wirefish =====
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build wirefish (release)
+      run: make wirefish
+
+    - name: Upload wirefish Executable
+      uses: actions/upload-artifact@v4
+      with:
+        name: wirefish Executable
+        path: ./wirefish
+
+# ===== Job 2: Test and Coverage =====
+  # This job depends on the 'build' job
   test:
     runs-on: ubuntu-latest
+    needs: build
     steps:
     - uses: actions/checkout@v4
 
