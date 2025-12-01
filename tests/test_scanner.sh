@@ -954,7 +954,7 @@ run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-" 1 "" "Invalid number"
 run_test "./wirefish --trace --target 8.8.8.8 --ttl ' 1 - 3 '" 1 "" "Range must be in format"
 
 # 275 negative ttl start
-run_test "./wirefish --trace --target 8.8.8.8 --ttl -1-5" 1 "" "TTL values must be in range"
+run_test "./wirefish --trace --target 8.8.8.8 --ttl -1-5" 1 "" "Invalid characters in range"
 
 # 276 negative ttl inside format
 run_test "./wirefish --trace --target 8.8.8.8 --ttl 1--5" 1 "" "Range start"
@@ -966,7 +966,7 @@ run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-1" 1 "" "requires root pri
 run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-30" 1 "" "requires root privileges"
 
 # 279 ttl above allowed limit
-run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-999" 1 "" "Invalid characters in range '-1-5'"
+run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-999" 1 "" "Error: TTL values'"
 
 # 280 invalid characters mid-ttl
 run_test "./wirefish --trace --target 8.8.8.8 --ttl 1x-3" 1 "" "Invalid characters in range"
