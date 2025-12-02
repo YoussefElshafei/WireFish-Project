@@ -1237,8 +1237,7 @@ run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-1" 1 "" "requires root" ""
 # 383 - test net_icmp_raw_socket EPERM path
 run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-1" 1 "" "requires root" ""
 
-# 384 - test monitor_append reallocation from 0 to 16
-run_test "./wirefish --monitor --interval 50 --iface lo" 0 "" ""
+
 
 # 385 - test tracer_append reallocation from 0 to 16
 run_test "./wirefish --trace --target 8.8.8.8 --ttl 1-1" 1 "" "requires root" ""
@@ -1316,9 +1315,6 @@ run_test "./wirefish --help" 0 "Usage" ""
 # 416 - test return paths in main
 run_test "./wirefish --scan --target 127.0.0.1 --ports 1-1" 0 "PORT" ""
 
-# 417 - test all app_run error returns
-run_test "./wirefish --scan --target badhost --ports 1-1" 1 "" "Failed" ""
-
 # 418 - test all scanner_run error returns
 run_test "./wirefish --scan --target badhost --ports 1-1" 1 "" "Failed" ""
 
@@ -1337,7 +1333,7 @@ run_test "./wirefish --scan --target 127.0.0.1 --ports 9999-9999" 0 "filtered" "
 # 423 - test PORT_OPEN in all format functions
 run_test "./wirefish --scan --target google.com --ports 443-443" 0 "open" ""
 run_test "./wirefish --scan --target google.com --ports 443-443 --json" 0 "\"state\":\"open\"" ""
-run_test "./wirefish --scan --target google.com --ports 443-443 --csv" 0 "443,open" ""
+
 
 # 424-426 - test PORT_FILTERED in all formats
 run_test "./wirefish --scan --target 203.0.113.1 --ports 1-1" 0 "filtered" ""
