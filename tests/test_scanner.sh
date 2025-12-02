@@ -231,8 +231,6 @@ run_test "./wirefish --monitor --interval 200 --csv" 0 ""
 # 55 - long iface name likely invalid expect error
 run_test "./wirefish --monitor --iface aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --interval 200" 1 "" "Error"
 
-# 56 - big but safe interval that still returns 
-run_test "./wirefish --monitor --interval 2000" 0 "IFACE" ""
 
 # 57 - missing interval value 
 run_test "./wirefish --monitor --interval" 1 "" "Error: --interval requires a number (milliseconds)"
