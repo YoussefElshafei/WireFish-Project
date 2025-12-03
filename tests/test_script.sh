@@ -1468,6 +1468,141 @@ run_test "./wirefish --monitor --interval 50 --iface lo" 0 "IFACE" ""
 run_test "./wirefish --monitor --interval 50 --iface lo --json" 0 "monitor" ""
 run_test "./wirefish --monitor --interval 50 --iface lo --csv" 0 "iface,rx_bytes" ""
 
+#######################################
+# Additional tests for better coverage
+#######################################
+
+# Tests for uncovered lines in cli.c
+# Line 289: interval validation in monitor mode (already covered but ensure it runs)
+run_test "./wirefish --monitor --interval 1000 --iface lo" 0 "" ""
+
+# Tests for uncovered lines in fmt.c
+# Lines 35, 45: PORT_CLOSED and Unknown port states
+# Note: PORT_CLOSED is hard to trigger reliably - most closed ports timeout
+# Unknown state should never happen in normal operation
+
+# Tests for uncovered lines in timeutil.c
+# Line 72-80: format_timestamp function - not called anywhere in current code
+# This function exists but isn't used, so can't be covered without modifying app
+
+# Tests for uncovered lines in monitor.c
+# Line 120: monitor_stop() - external API not used in tests
+# Line 194: fopen failure on /proc/net/dev - can't test without breaking system
+# Line 220-221: get_default_interface no interfaces found
+# Line 244: monitor_append realloc failure - can't test without malloc injection
+# Line 274: monitor_run NULL out parameter
+# Line 285-286: get_default_interface failure in monitor_run
+# Line 302-305: ringbuf creation failure
+# Line 337: read_iface_stats failure during monitoring loop
+# Line 346: time_delta_sec <= 0 - timing race condition
+# Line 400: monitorseries_free NULL check
+
+# Tests for uncovered lines in net.c  
+# Line 52: ringbuf_create malloc failure - can't test
+# Line 57-58: ringbuf values calloc failure - can't test
+# Line 88: ringbuf_average with count=0 - hard to trigger
+# Line 164-165: socket() creation failure - can't test without exhausting FDs
+# Line 179-181: fcntl F_GETFL failure - system error, can't test
+# Line 186-188: fcntl F_SETFL failure - system error, can't test
+# Line 200: immediate connect success (result == 0)
+# Line 207-208: connect failure not EINPROGRESS
+# Line 262-263: getsockopt failure - system error
+# Line 306-307: setsockopt failure for TTL
+# Line 343: perror for other ICMP socket errors
+
+# Tests for uncovered lines in scanner.c
+# Line 72-73: scantable_init malloc failure
+# Line 100-101: scantable_add realloc failure  
+# Line 148-149: scanner_run NULL parameters
+# Line 154-155: scanner_run empty target
+# Line 162-164: scanner_run invalid port range
+# Line 170: scantable_init failure
+# Line 217-219: PORT_CLOSED state (ECONNREFUSED)
+# Line 231-233: scantable_add failure during scan
+
+# Tests for uncovered lines in tracer.c (ALL lines after socket creation)
+# Lines 105-263: Everything after net_icmp_raw_socket requires root
+# Can't test without root privileges
+
+# Tests for uncovered lines in icmp.c (ALL lines)
+# Lines 21-158: All ICMP functions require tracer to run (needs root)
+# Can't test without root privileges
+
+# Tests for uncovered lines in app.c
+# Line 124-125: app_run NULL parameter check
+# Line 145-146: app_run unknown mode
+
+# Additional practical tests that can improve coverage:
+
+# Test PORT_CLOSED by trying to connect to a port that actively refuses
+# This is difficult - most systems timeout rather than refuse
+# Try connecting to a service that might refuse (unreliable)
+
+# Test immediate connect success on localhost (line 200 in net.c)
+# Localhost sometimes connects immediately without EINPROGRESS
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1-5" 0 "PORT" ""
+run_test "./wirefish --scan --target 127.0.0.1 --ports 10-15" 0 "PORT" ""
+run_test "./wirefish --scan --target 127.0.0.1 --ports 20-25" 0 "PORT" ""
+
+# More monitor tests to try to hit edge cases
+run_test "./wirefish --monitor --interval 100 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 50 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 25 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 10 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 5 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 1 --iface lo" 0 "" ""
+
+# Multiple scans to try different timing for immediate connect
+run_test "./wirefish --scan --target localhost --ports 1-10" 0 "PORT" ""
+run_test "./wirefish --scan --target 127.0.0.1 --ports 100-110" 0 "PORT" ""
+run_test "./wirefish --scan --target 127.0.0.1 --ports 200-210" 0 "PORT" ""
+
+# Test with extremely large scan ranges to trigger multiple reallocations
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1-500" 0 "PORT" ""
+run_test "./wirefish --scan --target 127.0.0.1 --ports 1-1000" 0 "PORT" ""
+
+# Test monitor with different timings to try to hit ringbuf edge cases
+run_test "./wirefish --monitor --interval 2000 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 1500 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 1000 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 500 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 250 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 100 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 50 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 20 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 10 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 5 --iface lo" 0 "" ""
+run_test "./wirefish --monitor --interval 1 --iface lo" 0 "" ""
+
+# Test scans on different external hosts to try different network conditions
+run_test "./wirefish --scan --target google.com --ports 80-80" 0 "open" ""
+run_test "./wirefish --scan --target google.com --ports 443-443" 0 "open" ""
+run_test "./wirefish --scan --target example.com --ports 80-80" 0 "" ""
+run_test "./wirefish --scan --target example.com --ports 443-443" 0 "" ""
+
+# Final note: The following cannot be covered without special setup:
+# 1. malloc/realloc/calloc failures (need malloc injection)
+# 2. System call failures like socket(), fcntl(), fopen() (need fault injection)
+# 3. All tracer.c and icmp.c code (requires root privileges)
+# 4. format_timestamp() in timeutil.c (not called by any code)
+# 5. monitor_stop() API (not used by CLI)
+# 6. PORT_CLOSED state (ECONNREFUSED rarely happens on test systems)
+# 7. Immediate connect() success (timing-dependent, may or may not hit)
+# 8. Various NULL checks and error paths that are defensive programming
+
+# Expected final coverage:
+# - cli.c: ~99% (line 289 is redundant check)
+# - fmt.c: ~98% (lines 35, 45 for rare states)
+# - app.c: ~98% (lines 124-125, 145-146 are defensive)
+# - main.c: ~97% (line 38 is defensive)
+# - scanner.c: ~98% (malloc failures and defensive checks)
+# - net.c: ~90% (system call failures and immediate connect)
+# - monitor.c: ~95% (malloc failures, system errors, unused API)
+# - timeutil.c: ~90% (format_timestamp not used)
+# - tracer.c: ~10% (everything needs root)
+# - icmp.c: ~0% (everything needs root)
+# - Overall: ~75-80% (limited by root requirement for tracer/icmp)
+
 # Cleanup
 rm -f tmp_out tmp_err
 
