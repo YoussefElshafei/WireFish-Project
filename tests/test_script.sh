@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # File: tests/test_script.sh
-# Summary: Unit tests for the TCP port-scanning module.  
+# Summary: Unit tests for the monitor scanner tracer.  
 # testing all files
 # Author: Youssef Khafagy
 #
