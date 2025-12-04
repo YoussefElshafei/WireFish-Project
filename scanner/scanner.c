@@ -159,8 +159,7 @@ int scanner_run(const CommandLine *cfg, ScanTable *out) {
     if (cfg->ports_from < 1 || cfg->ports_from > 65535 ||
         cfg->ports_to < 1 || cfg->ports_to > 65535 ||
         cfg->ports_from > cfg->ports_to) {
-        fprintf(stderr, "Error: Invalid port range %d-%d\n", 
-                cfg->ports_from, cfg->ports_to);
+        fprintf(stderr, "Error: Invalid port range %d-%d\n", cfg->ports_from, cfg->ports_to);
         return -1;
     }
     
