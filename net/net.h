@@ -25,5 +25,5 @@ int net_tcp_connect(const struct sockaddr *sa, socklen_t slen, int timeout_ms);
 int net_set_ttl(int sockfd, int ttl);
 int net_icmp_raw_socket(void);
 
-#endif /* NET_H */
+#endif 
 
