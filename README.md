@@ -1,3 +1,7 @@
+![Release](https://img.shields.io/github/v/release/YoussefElshafei/WireFish-Project)
+![License](https://img.shields.io/github/license/YoussefElshafei/WireFish-Project)
+![Stars](https://img.shields.io/github/stars/YoussefElshafei/WireFish-Project)
+
 # 🐟 Wirefish – Network Diagnostics & Monitoring Toolkit
 
 **Wirefish** is a lightweight, command-line network diagnostics suite designed for education in **systems programming** and networking. It unifies host scanning, traceroute, and interface bandwidth monitoring into a single tool, demonstrating key concepts like **raw sockets**, **ICMP construction**, and live interface monitoring.
