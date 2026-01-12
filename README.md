@@ -6,7 +6,6 @@
 ![License](https://img.shields.io/github/license/YoussefElshafei/WireFish-Project)
 ![Stars](https://img.shields.io/github/stars/YoussefElshafei/WireFish-Project)
 
-
 ---
 
 ## ✨ Features
